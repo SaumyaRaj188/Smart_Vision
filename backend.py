@@ -25,7 +25,7 @@ chat = model.start_chat(
 
 # Initialize the device and load the freshness model
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-freshness_model_path = "complete_model_cpu.pt"  # Replace with your actual model path
+freshness_model_path = "freshness_detection.pt"  # Replace with your actual model path
 freshness_model = torch.load(freshness_model_path)
 freshness_model = freshness_model.to(device)
 freshness_model.eval()
