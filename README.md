@@ -7,6 +7,7 @@ This repository contains two Python scripts, `backend.py` and `gui.py`, that wor
 - [Installation](#installation)
 - [Usage](#usage)
 - [Modules Used](#modules-used)
+- [Model Training](#model-training)
 
 ## Overview
 
