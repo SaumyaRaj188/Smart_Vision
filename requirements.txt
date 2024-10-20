@@ -1,0 +1,9 @@
+torch
+ultralytics
+Pillow
+pytesseract
+numpy
+torchvision
+google-generativeai
+python-dotenv
+tkinter

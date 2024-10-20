@@ -45,7 +45,7 @@ def process_and_display():
     
     # Save the result to product_details.txt
     with open("product_details.txt", "w") as f:
-        f.write(result)
+        f.write(f"Class: {class_name}\n {result}")
 
     messagebox.showinfo("Process Complete", "Processing complete and details saved!")
 
