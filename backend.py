@@ -17,7 +17,7 @@ model = genai.GenerativeModel('gemini-1.5-flash')
 
 chat = model.start_chat(
     history=[
-        {"role": "user", "parts": "You are a data extration AI, I will provide you with the raw OCR text extracted from a product's images, you need to extract all the meaningful information about the product like name, expiry, sno. etc and return in the format like, \nproduct_name: <name>\n name_property_1: <property_1>\n name_property_2: <property_2> etc. \n\n just return the product details no extra text required"},
+        {"role": "user", "parts": "You are a data extration AI, I will provide you with the raw OCR text extracted from a product's images, you need to extract all the meaningful information about the product like name, expiry, sno. etc and return in the format like, \nproduct_name: <name>\n  <property_1>\n  <property_2> etc. \n\n just return the product details no extra text required"},
 
         {"role": "model", "parts": "Okay, provide me with the raw OCR text"},
     ]
@@ -41,11 +41,28 @@ def call_api(prompt:str):
     return response
 
 
-# Define image preprocessing
+## Function to add Gaussian noise
+def add_gaussian_noise(tensor, mean=0.0, std=0.05):
+    noise = torch.randn(tensor.size()) * std + mean
+    return tensor + noise
+
+# Function to ensure all images are converted to RGB (fix for PNG images with alpha channel)
+def convert_image_to_rgb(image):
+    if image.mode != 'RGB':
+        image = image.convert('RGB')  # Convert RGBA or grayscale to RGB
+    return image
+
+# Updated data transforms with PNG fix and augmentations
 transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    transforms.Lambda(lambda img: convert_image_to_rgb(img)),  # Ensure all images are RGB
+    transforms.Resize((224, 224)),                             # Resize to 224x224
+    transforms.RandomHorizontalFlip(),                         # Random horizontal flip
+    transforms.RandomRotation(degrees=15),                     # Random rotation by ±15 degrees
+    transforms.ColorJitter(brightness=0.2),                    # Random brightness adjustment (dimming/brightening)
+    transforms.ToTensor(),                                     # Convert image to Tensor
+    transforms.Lambda(lambda x: add_gaussian_noise(x)),        # Add Gaussian noise
+    transforms.Normalize([0.485, 0.456, 0.406],                # Normalize based on ImageNet mean
+                         [0.229, 0.224, 0.225])                # Normalize based on ImageNet std
 ])
 
 
@@ -64,6 +81,7 @@ def freshness(image_path):
         prediction = torch.sigmoid(output)
         sig = prediction.item()
         transformed_output = custom_transform(sig)
+        print(transformed_output)
     
     return transformed_output * 100
 
@@ -82,7 +100,7 @@ def run_yolo_v8_detection(image_paths):
                 xmin, ymin, xmax, ymax = box.xyxy[0].tolist()
                 cropped_img = img.crop((xmin, ymin, xmax, ymax))
                 img_name = image_path.split("/")[-1]
-                cropped_img_path = f"fresh_ocr/{img_name}"
+                cropped_img_path = f"ocr/{img_name}"
                 cropped_img.save(cropped_img_path)
 
     for image_path in image_paths:
@@ -109,12 +127,12 @@ def ocr_text(img1, img2, img3, img4):
 
 def process_images(class_name, img1, img2, img3, img4):
     if class_name not in ["potato", "onion", "banana", "apple"]:
-        return ocr_text(img1, img2, img3, img4)
+        return ocr_text("ocr/"+img1, "ocr/"+img2, "ocr/"+img3, "ocr/"+img4)
     else:
-        freshness_score1 = freshness(img1)
-        freshness_score2 = freshness(img2)
-        freshness_score3 = freshness(img3)
-        freshness_score4 = freshness(img4)
+        freshness_score1 = freshness("input/"+img1)
+        freshness_score2 = freshness("input/"+img2)
+        freshness_score3 = freshness("input/"+img3)
+        freshness_score4 = freshness("input/"+img4)
         avg_freshness = (freshness_score1 + freshness_score2 + freshness_score3 + freshness_score4) / 4
         return f"Average Freshness Score: {avg_freshness:.2f}%"
 
@@ -127,11 +145,18 @@ if __name__ == '__main__':
     class_name = run_yolo_v8_detection(image_paths)
     
     # Use the cropped images for OCR or freshness checks
-    img1 = "fresh_ocr/front.jpg"
-    img2 = "fresh_ocr/back.jpg"
-    img3 = "fresh_ocr/side1.jpg"
-    img4 = "fresh_ocr/side2.jpg"
+    img1 = "front.jpg"
+    img2 = "back.jpg"
+    img3 = "side1.jpg"
+    img4 = "side2.jpg"
     result = process_images(class_name, img1, img2, img3, img4)
     
     print(f"Detected majority class: {class_name}")
     print(result)
+
+
+
+
+
+
+
