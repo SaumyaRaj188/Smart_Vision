@@ -74,4 +74,19 @@ This script provides a graphical user interface (GUI) for the project:
 - **python-dotenv**: For loading environment variables like the Gemini API key.
 - **tkinter**: For creating the graphical user interface.
 
+
+## Model Training
+
+The YOLO detection and freshness indicator models are custom trained models.
+For more info about training of model or the dataset refer to these links
+
+#### YOLO Detection
+- **Colab Notebook** : [here](https://colab.research.google.com/drive/1AkOXUeJG_QPDTB_pmecyAsRzlBX6nHrZ?usp=sharing)
+- **Dataset**: [custom dataset](https://drive.google.com/drive/folders/1d4uoZPNXL8uWYxeu65kXoMy6bV0b9M5t?usp=sharing)
+
+#### Freshness Detection
+- **Colab Notebook** : [here](https://colab.research.google.com/drive/1xDwyR7NAgr8hn3qu3bxy6UOECaY2zgJ7?usp=sharing)
+- **Dataset**: [kaggle dataset](https://www.kaggle.com/datasets/muhriddinmuxiddinov/fruits-and-vegetables-dataset/data)
+
+
 ---
